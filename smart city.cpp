@@ -686,7 +686,7 @@ void Draw()
 }
 
 int main(int argc, char** argv) {
-    PlaySound("D:\Study\\fall22\\Computer-Graphics-main\\OpenGL Programming\\project\highway-14475.wav", NULL, SND_ASYNC);
+    PlaySound("D:\\Study\\fall22\\Computer-Graphics-main\\OpenGL Programming\\project\highway-14475.wav", NULL, SND_ASYNC);
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
