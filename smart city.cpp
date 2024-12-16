@@ -6,29 +6,23 @@
 
 void init()
 {
-    glClearColor(1.0 / 255 * 135, 1.0 / 255 * 206, 1.0 / 255 * 235, 0.0); //GLfloat red,green,blue,alpha initial value 0 alpha values used by glclear to clear the color buffers
-    //glOrtho(-50, 50, -50, 50, -50, 50);
-    gluOrtho2D(0.0, 900.0, 0.0, 900.0); // Orthographic representation; multiply the current matrix by an orthographic matrix 2D= left right,bottom,top equivalent near=-1,far=1
+    glClearColor(1.0 / 255 * 135, 1.0 / 255 * 206, 1.0 / 255 * 235, 0.0); // Set background color to sky blue
+    //glOrtho(-50, 50, -50, 50, -50, 50); // Uncomment if 3D orthographic projection is needed
+    gluOrtho2D(0.0, 900.0, 0.0, 900.0); // Set 2D orthographic projection
 }
 
 void circle(GLfloat rx, GLfloat ry, GLfloat cx, GLfloat cy) {
-
     glBegin(GL_TRIANGLE_FAN);
-    glVertex2f(cx, cy);// center of circle
+    glVertex2f(cx, cy); // Center of the circle
 
-    for (int i = 0; i <= 100;i++) {
-
-        float angle = 2 * 3.1416 * (i * 1.0 / 100);
-
-        float x = rx * cosf(angle);
-        float y = ry * sinf(angle);
-
-        glVertex2f((x + cx), (y + cy));
+    for (int i = 0; i <= 100; i++) {
+        float angle = 2 * 3.1416 * (i * 1.0 / 100); // Calculate angle for each segment
+        float x = rx * cosf(angle); // X coordinate
+        float y = ry * sinf(angle); // Y coordinate
+        glVertex2f((x + cx), (y + cy)); // Vertex on the circle
     }
 
     glEnd();
-
-
 }
 
 float car = 0;
@@ -37,19 +31,67 @@ float air = 0;
 float bus = 0;
 float cloud = 0;
 
+float turbineAngle = 0.0; // Angle for turbine rotation
+
+void drawBlade(float angle) {
+    glPushMatrix();
+    glRotatef(angle, 0.0, 0.0, 1.0); // Rotate blade around Z-axis
+    glBegin(GL_TRIANGLES);
+    glColor3f(179.0 / 255, 179.0 / 255, 179.0 / 255); // Set blade color to light gray
+    glVertex2f(0, 40); // Blade tip
+    glVertex2f(-12, -40); // Left base of the blade
+    glVertex2f(12, -40); // Right base of the blade
+    glEnd();
+    glPopMatrix();
+}
+
+void drawTurbine(float x, float y) {
+    glPushMatrix();
+    glTranslatef(x, y, 0); // Move to the turbine position
+
+    // Draw three blades at equal angles
+    for (int i = 0; i < 3; ++i) {
+        drawBlade(turbineAngle + i * 120); // Spread blades evenly
+    }
+
+    glPopMatrix();
+}
+
+void drawTurbineStand(float x, float y) {
+    glPushMatrix();
+    glTranslatef(x, y, 0); // Move to the stand position
+
+    // Draw the stand as a thinner rectangle
+    glBegin(GL_QUADS);
+    glColor3f(0.0 / 255, 0.0 / 255, .00 / 255); // RGB color for the stand
+    glVertex2f(-3, 0); // Bottom left (thinner width)
+    glVertex2f(3, 0); // Bottom right (thinner width)
+    glVertex2f(3, -150); // Top right
+    glVertex2f(-3, -150); // Top left
+    glEnd();
+
+    glPopMatrix();
+}
+
+void update(int value) {
+    turbineAngle += 5.0; // Increment turbine angle for rotation
+    if (turbineAngle > 360) {
+        turbineAngle -= 360; // Reset angle if it exceeds 360 degrees
+    }
+    glutPostRedisplay(); // Request display update
+    glutTimerFunc(100, update, 0); // Set timer for next update
+}
 
 void Draw()
 {
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT); // Clear the color buffer
 
-    glColor3f(1.0 / 255 * 27, 1.0 / 255 * 149, 1.0 / 255 * 224);
-    //river
+    glColor3f(1.0 / 255 * 27, 1.0 / 255 * 149, 1.0 / 255 * 224); // Set river color
     glBegin(GL_QUADS);
-    glVertex2f(00.0, 00.0);
-    glVertex2f(900.0, 0.0);
-    glVertex2f(900.0, 150.0);
-    glVertex2f(00.0, 150.0);
-
+    glVertex2f(00.0, 00.0); // Bottom left
+    glVertex2f(900.0, 0.0); // Bottom right
+    glVertex2f(900.0, 150.0); // Top right
+    glVertex2f(00.0, 150.0); // Top left
     glEnd();
 
     //boat
@@ -97,20 +139,14 @@ void Draw()
     glVertex2f(boat + 470.0, 115.0);
     glEnd();
 
-    //boat moving
-
-    if (boat >= -400)
-    {
-        boat = boat - 0.03;
+    //boat movement
+    if (boat >= -400) {
+        boat = boat - 0.03; // Move boat left
+        glutPostRedisplay();
+    } else {
+        boat = 1000; // Reset boat position
         glutPostRedisplay();
     }
-
-    else {
-        boat = 1000;
-        glutPostRedisplay();
-    }
-
-
 
     //cloud
     glColor3f(1.0 / 255 * 208, 1.0 / 255 * 204, 1.0 / 255 * 204);
@@ -136,14 +172,11 @@ void Draw()
 
 
 
-    if (cloud <= 900)
-    {
-        cloud = cloud + 0.02;
+    if (cloud <= 900) {
+        cloud = cloud + 0.02; // Move cloud right
         glutPostRedisplay();
-    }
-
-    else {
-        cloud = -10;
+    } else {
+        cloud = -10; // Reset cloud position
         glutPostRedisplay();
     }
 
@@ -232,16 +265,11 @@ void Draw()
     circle(12, 13, car + 250, 190);
 
     //car run
-
-
-    if (car <= 900)
-    {
-        car = car + 0.09;
+    if (car <= 900) {
+        car = car + 0.09; // Move car right
         glutPostRedisplay();
-    }
-
-    else {
-        car = -200;
+    } else {
+        car = -200; // Reset car position
         glutPostRedisplay();
     }
 
@@ -557,19 +585,13 @@ void Draw()
 
 
     //air moving
-
-
-    if (air <= 900)
-    {
-        air = air + 0.15;
+    if (air <= 900) {
+        air = air + 0.15; // Move airplane right
+        glutPostRedisplay();
+    } else {
+        air = -200; // Reset airplane position
         glutPostRedisplay();
     }
-
-    else {
-        air = -200;
-        glutPostRedisplay();
-    }
-
 
     //bus 
 
@@ -660,33 +682,23 @@ void Draw()
 
 
 
-    if (bus <= 900)
-    {
-        bus = bus + 0.12;
+    if (bus <= 900) {
+        bus = bus + 0.12; // Move bus right
+        glutPostRedisplay();
+    } else {
+        bus = -300; // Reset bus position
         glutPostRedisplay();
     }
 
-    else {
-        bus = -300;
-        glutPostRedisplay();
-    }
+    drawTurbineStand(50.0, 430.0); // Draw turbine stand at specified position
+    drawTurbine(50.0, 430.0); // Draw turbine above the stand
 
-
-
-
-
-
-
-    glFlush();
-
-
-
-
-    glutSwapBuffers();
+    glFlush(); // Flush the OpenGL commands
+    glutSwapBuffers(); // Swap the front and back buffers
 }
 
 int main(int argc, char** argv) {
-    PlaySound("D:\\Study\\fall22\\Computer-Graphics-main\\OpenGL Programming\\project\highway-14475.wav", NULL, SND_ASYNC);
+    PlaySound("D:\\Study\\fall22\\Computer-Graphics-main\\OpenGL Programming\\project\\highway-14475.wav", NULL, SND_ASYNC);
 
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE);
@@ -695,6 +707,8 @@ int main(int argc, char** argv) {
     glutCreateWindow("LAB Project");
     init();
     glutDisplayFunc(Draw);
+    glutTimerFunc(100, update, 0); // Start the update timer
+
     glutMainLoop();
     return 0;
 }
